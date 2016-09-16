@@ -4,6 +4,8 @@
 import configparser
 import os
 import redis
+import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -66,18 +68,18 @@ def handle_message(message, db):
     :param db: The database instance.
     """
     user_entry = db.hgetall(message["data"])
-    print(user_entry)
 
     ssh_key = str(user_entry[b"ssh_key"], "utf-8")
     username = str(user_entry[b"username"], "utf-8")
 
     key_path = os.path.join(KEYDIR_PATH, "{}.pub".format(username))
 
-    print(key_path)
-
     with open(key_path, mode="w") as pub_key:
         pub_key.write(ssh_key)
         pub_key.flush()
+
+    shutil.chown(key_path, user="git", group="git")
+    os.chmod(key_path, stat.S_IRUSR | stat.S_IWUSR)
 
     try:
         subprocess.check_call([GITOLITE_BIN, "setup"])
@@ -96,7 +98,6 @@ def main():
     while True:
         message = pub_sub.get_message()
         if message and message["type"] == "message":
-            print("Got message: {}".format(message))
             handle_message(message, db)
         time.sleep(1)
 
