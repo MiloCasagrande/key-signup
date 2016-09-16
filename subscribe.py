@@ -43,10 +43,8 @@ def get_db_connection(config):
     :type config: dict
     :return The database connection.
     """
-    # TODO: change the host to redis
-    redis_host = config.get("REDIS_HOST", "localhost")
-    # TODO: change the port to 6379
-    redis_port = config.get("REDIS_PORT", 16379)
+    redis_host = config.get("REDIS_HOST", "redis")
+    redis_port = config.get("REDIS_PORT", 6379)
     redis_pwd = config.get("REDIS_PASSWORD", None)
 
     try:
